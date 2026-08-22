@@ -13,6 +13,10 @@ Integrated Security=True;TrustServerCertificate=True
 
 No real password is included in the connection string or the submitted repository, since LocalDB uses integrated Windows authentication.
 3. Database and Schema.sql
+<img width="344" height="297" alt="image" src="https://github.com/user-attachments/assets/4a0bf37a-efaa-4756-bc74-065255fc06a4" />
+
+
+
 The database and Users table were created using SQL Server Object Explorer inside Visual Studio, by running a New Query against the LocalDB connection. The full script is saved in Schema.sql. It creates the ID2459219_LoginDB database and the dbo.Users table with six columns:
 ●	UserID — INT, IDENTITY(1,1), PRIMARY KEY
 ●	Username — NVARCHAR(50), NOT NULL, UNIQUE
@@ -21,14 +25,36 @@ The database and Users table were created using SQL Server Object Explorer insid
 ●	FullName — NVARCHAR(100), NULL
 ●	CreatedAt — DATETIME, DEFAULT GETDATE()
 4. Registration
+<img width="734" height="308" alt="image" src="https://github.com/user-attachments/assets/ffd949e6-6aff-41b5-8ff5-ce545a8ebb91" />
+
+
+
+
 RegisterForm.btnRegister_Click first validates the input: no empty fields, password at least 6 characters, password and confirm-password match, and the email contains "@". It then calls DatabaseHelper.UsernameExists(), which runs a parameterized SELECT COUNT(*) query through ExecuteScalar() to check for a duplicate username. If the username is free, DatabaseHelper.RegisterUser() hashes the password with HashPassword() and inserts the new user with a parameterized INSERT through ExecuteNonQuery(). On success, a confirmation message is shown, the form is cleared, and the user is returned to the Login screen.
 5. Login
+<img width="625" height="413" alt="image" src="https://github.com/user-attachments/assets/bbdc3e28-df60-4f49-afd4-d642ea8b5537" />
+
+
+
+
 LoginForm.btnLogin_Click takes the entered username and password and calls DatabaseHelper.ValidateLogin(). This method runs a parameterized SELECT (using a SqlDataReader) to fetch the stored PasswordHash and FullName for that username, hashes the entered password with the same SHA-256 routine, and compares the two hashes. If they match, LoginSuccess() opens HomeForm and passes the FullName through. If not, LoginFailed() increments a failedAttempts counter and shows the number of attempts remaining; after 3 failed attempts the Login button is disabled.
 6. Logout
+
+<img width="734" height="306" alt="image" src="https://github.com/user-attachments/assets/f08bee74-dd49-4e43-b958-4908de334de7" />
+
+
+
+
 HomeForm.btnLogout_Click simply calls this.Close(). LoginForm attaches a FormClosed event handler to the HomeForm instance before showing it, so when HomeForm closes, LoginForm.ClearForm() runs — clearing the textboxes and focusing the username field — and the Login form is shown again. The application never calls Application.Exit() on logout, and HomeForm is properly closed (not just hidden), so no orphan forms are left running.
 7. Password Hashing
 DatabaseHelper.HashPassword() uses SHA-256 to convert the plain password into a fixed-length hex string before it is ever sent to the database. Only this hash is stored in the PasswordHash column — the real password is never written to the database. During login, the entered password is hashed the same way and compared against the stored hash, so the comparison never happens on plain text. This matters because if the database were ever leaked or accessed by someone else, the actual passwords would still not be readable. For a production system, a slower password-specific algorithm with a per-user salt (such as bcrypt, Argon2id, or PBKDF2) would normally be preferred over a single unsalted SHA-256 pass, since SHA-256 alone is fast to brute-force at scale.
 8. SQL Injection Demonstration
+<img width="734" height="413" alt="image" src="https://github.com/user-attachments/assets/af0124f8-1a42-4a38-8e32-a1225765d79c" />
+
+
+
+
+
 (a) Vulnerable code (demo only — not in the final submission)
 A separate VulnerableDemoForm built the SQL command by concatenating the raw input directly into the query string:
 string query = "SELECT * FROM dbo.Users WHERE Username='" + username +
