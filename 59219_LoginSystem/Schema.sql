@@ -1,0 +1,15 @@
+﻿CREATE DATABASE ID2459219_LoginDB;
+GO
+
+USE ID2459219_LoginDB;
+GO
+
+CREATE TABLE dbo.Users (
+    UserID       INT IDENTITY(1,1) PRIMARY KEY,
+    Username     NVARCHAR(50)  NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(200) NOT NULL,
+    Email        NVARCHAR(100) NULL,
+    FullName     NVARCHAR(100) NULL,
+    CreatedAt    DATETIME      DEFAULT GETDATE()
+);
+GO
